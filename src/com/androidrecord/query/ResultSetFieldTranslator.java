@@ -5,6 +5,9 @@ import com.androidrecord.ActiveRecordBase;
 import com.androidrecord.DateTime;
 
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public enum ResultSetFieldTranslator {
     LONG {
@@ -71,7 +74,28 @@ public enum ResultSetFieldTranslator {
             if (dateString == null) return null;
             return DateTime.from(dateString);
         }
-    };
+    },
+    DATE {
+        @Override
+        public boolean translates(Field field) {
+            return field.getType().equals(java.util.Date.class);
+        }
+
+        @Override
+        public Object value() {
+            int columnIndex = getResultSet().getColumnIndex(getField().getName());
+            String dateString = getResultSet().getString(columnIndex);
+            if (dateString == null) return null;
+            
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				return format.parse(dateString);
+			}
+			catch(ParseException e) {
+				throw new RuntimeException(e);
+			}
+        }
+    };    
 
     private Cursor resultSet;
     private Field field;

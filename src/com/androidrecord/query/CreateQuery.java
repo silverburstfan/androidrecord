@@ -50,10 +50,19 @@ public class CreateQuery {
     }
 
     private ArrayList<Field> fieldsIgnoringId() {
-        Field[] allFields = activeRecordClass.getFields();
+    	return fieldsIgnoringId(activeRecordClass);
+    }
+    
+    private ArrayList<Field> fieldsIgnoringId(Class<?> clazz) {
+        Field[] allFields = clazz.getDeclaredFields();
         ArrayList<Field> fieldsIgnoringId = new ArrayList<Field>();
         for (Field field : allFields) {
-            if (!field.getName().equals("id")) fieldsIgnoringId.add(field);
+            if (!field.getName().equals("id")) {
+            	fieldsIgnoringId.add(field);
+            }
+        }
+        if(!activeRecordClass.equals(ActiveRecordBase.class)) {
+        	fieldsIgnoringId.addAll(fieldsIgnoringId(ActiveRecordBase.class));
         }
         return fieldsIgnoringId;
     }

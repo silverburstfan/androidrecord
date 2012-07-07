@@ -49,7 +49,7 @@ public class MockDatabase extends Database {
     }
 
     @Override
-    public Cursor select(String tableName, String selection) {
+    public Cursor select(String tableName, String selection, String... args) {
         selectCalled = true;
         if (resultsToReturn.isEmpty()) {
             if (forever) resultsToReturn = new ArrayList<MockCursor>(usedRecords);

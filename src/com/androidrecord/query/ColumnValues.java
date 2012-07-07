@@ -8,6 +8,8 @@ import com.androidrecord.associations.BelongsTo;
 import com.androidrecord.associations.HasOne;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class ColumnValues {
     private ContentValues contentValues = new ContentValues();
@@ -18,9 +20,9 @@ public class ColumnValues {
     }
 
     public ContentValues generate() {
-        Field[] fields = this.activeRecordBase.getClass().getFields();
-        for (Field field : fields) {
+        for (Field field : fields()) {
             try {
+            	field.setAccessible(true);
                 handleAssociation(field);
                 handleLong(field);
                 handleString(field);
@@ -32,6 +34,22 @@ public class ColumnValues {
             }
         }
         return contentValues;
+    }
+    
+    private ArrayList<Field> fields() {
+    	return fields(this.activeRecordBase.getClass());
+    }
+    
+    private ArrayList<Field> fields(Class<?> activeRecordClass) {
+        Field[] allFields = activeRecordClass.getDeclaredFields();
+        ArrayList<Field> fields = new ArrayList<Field>();
+        for (Field field : allFields) {
+        	fields.add(field);
+        }
+        if(!activeRecordClass.equals(ActiveRecordBase.class)) {
+        	fields.addAll(fields(ActiveRecordBase.class));
+        }
+        return fields;
     }
 
     private void handleIntegerField(Field field) throws IllegalAccessException {
@@ -83,7 +101,7 @@ public class ColumnValues {
     }
 
     private void setOwnerOn(ActiveRecordBase ownedEntity) throws IllegalAccessException {
-        for (Field ownedEntityField : ownedEntity.getClass().getFields()) {
+        for (Field ownedEntityField : fields(ownedEntity.getClass())) {
             if (ownsThis(ownedEntityField)) {
                 ownedEntityField.set(ownedEntity, activeRecordBase);
             }
@@ -99,6 +117,12 @@ public class ColumnValues {
             DateTime dateTime = (DateTime) field.get(activeRecordBase);
             if (dateTime == null) return;
             contentValues.put(field.getName(), dateTime.toString());
+        }
+        else if (field.getType().equals(java.util.Date.class)) {
+        	java.util.Date date = (java.util.Date) field.get(activeRecordBase);
+        	if (date == null) return;
+        	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        	contentValues.put(field.getName(), format.format(date));
         }
     }
 

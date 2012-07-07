@@ -26,8 +26,8 @@ public class QueryContext<T extends ActiveRecordBase> {
         oneToOneAssociations = new HashMap<String, OneToOneAssociation>();
     }
 
-    public T find(String whereClause) {
-        return new FindQuery<T>(this, database, record, whereClause).run();
+    public T find(String whereClause, String... whereClauseArgs) {
+        return new FindQuery<T>(this, database, record, whereClause, whereClauseArgs).run();
     }
 
     public OneToOneAssociation oneToOneAssociation(String associationName, Long ownerId) {
@@ -62,8 +62,8 @@ public class QueryContext<T extends ActiveRecordBase> {
         return null;
     }
 
-    private List select(ActiveRecordBase lookupInstance, String whereClause) {
-        return new SelectQuery<T>(this, database, lookupInstance, whereClause).run();
+    private List select(ActiveRecordBase lookupInstance, String whereClause, String... whereClauseArgs) {
+        return new SelectQuery<T>(this, database, lookupInstance, whereClause, whereClauseArgs).run();
     }
 
     public boolean hasUnfulfilledAssociations() {
@@ -73,7 +73,7 @@ public class QueryContext<T extends ActiveRecordBase> {
         return false;
     }
 
-    public List<T> where(String whereClause) {
-        return select(record, whereClause);
+    public List<T> where(String whereClause, String... whereClauseArgs) {
+        return select(record, whereClause, whereClauseArgs);
     }
 }

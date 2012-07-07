@@ -24,8 +24,8 @@ public class Database {
         database.delete(tableName, whereClause, null);
     }
 
-    public Cursor select(String tableName, String selection) {
-        return database.query(tableName, null, selection, null, null, null, null);
+    public Cursor select(String tableName, String selection, String... selectionArgs) {
+        return database.query(tableName, null, selection, selectionArgs, null, null, null);
     }
 
     public Cursor selectAll(String tableName) {

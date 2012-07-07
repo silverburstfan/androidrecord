@@ -2,6 +2,8 @@ package com.androidrecord;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.util.Log;
+
 import com.androidrecord.db.Database;
 import com.androidrecord.query.ColumnValues;
 import com.androidrecord.query.CreateQuery;
@@ -14,6 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,6 +46,7 @@ public abstract class ActiveRecordBase<T extends ActiveRecordBase> {
 
     private void initializeCollections() {
         for (Field field : getClass().getFields()) {
+        	field.setAccessible(true);
             if (field.getType().equals(ActiveCollection.class)) {
                 try {
                     field.set(this, ActiveCollection.attachTo(this, field));
@@ -106,8 +111,8 @@ public abstract class ActiveRecordBase<T extends ActiveRecordBase> {
      * @param whereClause   the where clause to match against.
      * @return              a new object with its persistent fields set to the values of the database record found
      */
-    public T find(String whereClause) {
-        return new QueryContext<T>(database, (T) this).find(whereClause);
+    public T find(String whereClause, String... whereClauseArgs) {
+        return new QueryContext<T>(database, (T) this).find(whereClause, whereClauseArgs);
     }
 
     /**
@@ -174,16 +179,34 @@ public abstract class ActiveRecordBase<T extends ActiveRecordBase> {
      * @see             com.androidrecord.associations.AssociationResolver
      */
     public void linkAssociations(QueryContext<T> context) {
-        for (Field field : getClass().getFields()) {
+        for (Field field : fields(getClass())) {
             AssociationResolver resolver = association(field).on(this).within(context);
             resolver.establish();
         }
     }
 
     public List<Field> getSortedFields() {
-        List<Field> fields = Arrays.asList(getClass().getFields());
+        List<Field> fields = fields(getClass());
         Collections.sort(fields, new FieldComparator());
         return fields;
+    }
+    
+    private List<Field> fields(Class<?> clazz) {
+    	List<Field> fields = asList(clazz.getDeclaredFields());
+    	if(clazz != ActiveRecordBase.class) {
+    		fields.addAll(fields(ActiveRecordBase.class));
+    	}
+    	return fields;
+    }
+    
+    private List<Field> asList(Field [] fields) {
+    	List<Field> fieldList = new ArrayList<Field>(fields.length);
+    	for(Field f : fields) {
+    		if(!Modifier.isStatic(f.getModifiers())) {
+    			fieldList.add(f);
+    		}
+    	}
+    	return fieldList;
     }
 
     /**

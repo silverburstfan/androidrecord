@@ -43,6 +43,7 @@ public class Query<T extends ActiveRecordBase> {
 
         List<Field> sortedFields = activeRecord.getSortedFields();
         for (Field field : sortedFields) {
+        	field.setAccessible(true);
             copyField(field, activeRecord, result);
         }
 

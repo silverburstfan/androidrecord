@@ -6,10 +6,12 @@ import com.androidrecord.db.Database;
 
 public class FindQuery<T extends ActiveRecordBase> extends Query<T> {
     private String whereClause;
+    private String[] whereClauseArgs;
 
-    public FindQuery(QueryContext<T> context, Database database, T activeRecordInstance, String whereClause) {
+    public FindQuery(QueryContext<T> context, Database database, T activeRecordInstance, String whereClause, String... whereClauseArgs) {
         super(context, activeRecordInstance, database);
         this.whereClause = whereClause;
+        this.whereClauseArgs = whereClauseArgs;
     }
 
     public T run() {

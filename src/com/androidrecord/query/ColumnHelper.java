@@ -13,6 +13,7 @@ public class ColumnHelper {
         put(int.class, "integer");
 
         put(DateTime.class, "varchar(19)");
+        put(java.util.Date.class, "varchar(19)");
 
         put(Boolean.class, "integer");
         put(boolean.class, "integer");
